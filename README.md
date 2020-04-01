@@ -13,8 +13,7 @@ Requirements
 * Numpy 1.16.4
 
 ## Training and Testing Datasets
-Training dataset
-* [download_link]().
+Training dataset  * [download_link]().
 
 ## Testing
 * Download pretrained RGB model from 
