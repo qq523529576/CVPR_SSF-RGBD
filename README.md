@@ -22,5 +22,5 @@ Training dataset:  * [download_link]().  ||  Test dataset:  * [download_link]().
 ## Results
 * Saliency maps generated from the RGB stream can be downnloaded from:
 
-DUT-RGBD:  * [download_link]().||NLPR:  * [download_link]().||NJUD:  * [download_link]().||STEREO:  * [download_link]().||LFSD:  * [download_link]().||RGBD-135:  * [download_link]().
+* [DUT-RGBD]().||* [NLPR]().||* [NJUD]().||* [STEREO]().||* [LFSD]().||* [RGBD-135]().
 
