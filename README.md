@@ -13,11 +13,13 @@ Requirements
 * Numpy 1.16.4
 
 ## Training and Testing Datasets
-Training dataset:  * [download_link]().    '         '          ||  Test dataset:  * [download_link](). 
+Training dataset:  * [download_link]().  ||  Test dataset:  * [download_link](). 
 
 ## Testing
-* Download pretrained RGB model from 
-* Modify your path of testing dataset in test_depth
-* Run test_RGB to inference saliency maps
-* Saliency maps generated from the RGB stream can be downnloaded from 
+* Download pretrained model from * [download_link]().
+* Modify your path of testing dataset in test.py
+* Run test.py to inference saliency maps
+## Results
+* Saliency maps generated from the RGB stream can be downnloaded from
+DUT-RGBD:  * [download_link]().||NLPR:  * [download_link]().||NJUD:  * [download_link]().||STEREO:  * [download_link]().||LFSD:  * [download_link]().||RGBD-135:  * [download_link]().
 
