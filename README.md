@@ -20,7 +20,7 @@ Training dataset:  * [download_link]().  ||  Test dataset:  * [download_link]().
 * Modify your path of testing dataset in test.py
 * Run test.py to inference saliency maps
 ## Results
-* Saliency maps generated from the RGB stream can be downnloaded from:
+* Saliency maps generated from the model can be downnloaded from:
 
 * [  **DUT-RGBD**    ]()||* [    **NLPR**    ]()||* [    **NJUD**    ]()||* [    **STEREO**    ]()||* [    **LFSD**    ]()||* [    **RGBD-135**    ]()
 
