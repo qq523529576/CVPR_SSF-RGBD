@@ -22,8 +22,9 @@ Training dataset:  * [download_link]().  ||  Test dataset:  * [download_link]().
 ## Results
 * Saliency maps generated from the model can be downnloaded from:
 
-* [  **DUT-RGBD**    ](https://pan.baidu.com/s/1Fk35_f4HKkkDVuTGo3qVrQ) code：w92o ||* [    **NLPR**    ]()||* [    **NJUD**    ](https://pan.baidu.com/s/1eMKC6DSsnevG8jkectjd7A 
-) code：ufun||* [    **STEREO**    ]()||* [    **LFSD**    ](https://pan.baidu.com/s/1mbnu3H_j8pGmzGBr1Ea6TA) code：d86o||* [    **RGBD-135**    ]()
+* [  **DUT-RGBD**    ](https://pan.baidu.com/s/1Fk35_f4HKkkDVuTGo3qVrQ) code：w92o ||* [    **NLPR**    ](https://pan.baidu.com/s/1Tuv-2cfhq8BvmWky1yhL7w)
+codes：c9rw ||* [    **NJUD**    ](https://pan.baidu.com/s/1eMKC6DSsnevG8jkectjd7A 
+) code：ufun ||* [    **STEREO**    ]()||* [    **LFSD**    ](https://pan.baidu.com/s/1mbnu3H_j8pGmzGBr1Ea6TA) code：d86o ||* [    **RGBD-135**    ]()
 
 ## Contact and Questions
 Contact: Weisong Ren. Email: [beatlescoco@mail.dlut.edu.cn]().
