@@ -14,7 +14,7 @@ Requirements
 
 ## Training and Testing Datasets
 Training dataset
-[download_link](http://ice.dlut.edu.cn/lu/publications.html).
+*[download_link](http://ice.dlut.edu.cn/lu/publications.html).
 
 ## Testing
 * Download pretrained RGB model from 
