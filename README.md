@@ -22,5 +22,7 @@ Training dataset:  * [download_link]().  ||  Test dataset:  * [download_link]().
 ## Results
 * Saliency maps generated from the RGB stream can be downnloaded from:
 
-* *[  **DUT-RGBD**    ]()||* [    **NLPR**    ]()||* [    **NJUD**    ]()||* [    **STEREO**    ]()||* [    **LFSD**    ]()||* [    **RGBD-135**    ]()
+* [  **DUT-RGBD**    ]()||* [    **NLPR**    ]()||* [    **NJUD**    ]()||* [    **STEREO**    ]()||* [    **LFSD**    ]()||* [    **RGBD-135**    ]()
 
+## Contact and Questions
+Contact: Weisong Ren. Email: [beatlescoco@mail.dlut.edu.cn]().
