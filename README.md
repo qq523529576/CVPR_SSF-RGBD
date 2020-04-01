@@ -16,7 +16,7 @@ Requirements
 Training dataset:  * [download_link](https://pan.baidu.com/s/1dv6cw3TfW4ZBaUsMC-tN1g) codes：5fms.  ||  Test dataset:  * [download_link](https://pan.baidu.com/s/1maVZMJxlCcaeYCtdv_fIRw) codes：49l7. 
 
 ## Testing
-* Download pretrained model from * [download_link](https://pan.baidu.com/s/1sZH4Wh_-nne-nMvDQvSyZw) codes：8zw8).
+* Download pretrained model from * [download_link](https://pan.baidu.com/s/1sZH4Wh_-nne-nMvDQvSyZw) codes：8zw8.
 * Modify your path of testing dataset in test.py
 * Run test.py to inference saliency maps
 ## Results
