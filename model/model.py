@@ -147,13 +147,12 @@ class AttentionLayer(nn.Module):
             return x * y
         else:
             return y
-######################## aggragation three level saliency features######################
+################################## #saliency decoder block##############################
 class decoder_s(nn.Module):
     def __init__(self, channel):
         super(decoder_s, self).__init__()
         self.relu = nn.ReLU(True)
         self.upsample = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True)
-        #
         self.conv_upsample1 = nn.Conv2d(channel, channel, 3, padding=1)
         self.conv_upsample2 = nn.Conv2d(channel, channel, 3, padding=1)
         self.conv_upsample3 = nn.Conv2d(channel, channel, 3, padding=1)
@@ -166,7 +165,6 @@ class decoder_s(nn.Module):
         self.conv_upsample10 = nn.Conv2d(channel, channel, 3, padding=1)
         self.conv_upsample11 = nn.Conv2d(2 *channel, 2 *channel, 3, padding=1)
         self.conv_upsample12 = nn.Conv2d(channel, channel, 3, padding=1)
-        #
         self.channel_att5 = AttentionLayer(channel,reduction=2)
         self.channel_att4 = AttentionLayer(channel,reduction=2)
         self.channel_att3 = AttentionLayer(channel,reduction=2)
@@ -179,7 +177,6 @@ class decoder_s(nn.Module):
         self.channel_rdatt5 = AttentionLayer(channel, reduction=2)
         self.channel_rdatt4 = AttentionLayer(channel, reduction=2)
         self.channel_rdatt3 = AttentionLayer(channel, reduction=2)
-        #
         self.conv_concat3 = nn.Conv2d(2 * channel, 2 * channel, 3, padding=1)
         self.conv_concat4 = nn.Conv2d(2 * channel, 2 * channel, 3, padding=1)
         self.conv_concat5 = nn.Conv2d(2 * channel, 2 * channel, 3, padding=1)
@@ -199,7 +196,6 @@ class decoder_s(nn.Module):
         self.conv_concat19 = nn.Conv2d(2 * channel, channel, 1)
         self.conv_concat20 = nn.Conv2d(2 * channel, 2 * channel, 3, padding=1)
         self.conv_concat21 = nn.Conv2d(2 * channel, channel, 1)
-        #
         self.conv5_1 = nn.Conv2d(1* channel, 1*channel, 3, padding=1)
         self.conv5_2 = nn.Conv2d(1 * channel, 1 * channel, 3, padding=1)
         self.conv5_r = nn.Conv2d(1* channel, 1*channel, 3, padding=1)
@@ -315,7 +311,6 @@ class decoder_s(nn.Module):
         self.pool_depth2 = nn.AvgPool2d(2, stride=2)
         self.sigmoid3_1 =nn.Sigmoid()
         self.sigmoid5_1 = nn.Sigmoid()
-
         self.HA = HA()
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -323,27 +318,24 @@ class decoder_s(nn.Module):
                 m.bias.data.fill_(0)
 
     def forward(self, x3, x4 ,x5, x3_2, x4_2,x5_2,x3_3, x4_3, x5_3,depth_):
-        #  x3: 1/4 x4:1/8 x5:1/16
-        #depth map pooling
         depth_ = self.pool_depth(self.pool_depth2(depth_))
-        #sal feature
         x5_s_1 = x5
         x5_s_1 = self.relu5_8(self.conv5_8(x5_s_1))
         x5_s_1 = self.relu5_9(self.conv5_9(x5_s_1))
-        #depth feature extraction
         x5_d = x5_3
-        x5_d = self.relu5_1(self.conv5_1(x5_d))
-        x5_c = self.relu5_2(self.conv5_2(x5_d))
-        # boundary feature extraction
+        x5_d = self.conv5_1(x5_d)
+        x5_d = self.relu5_1(x5_d)
+        x5_c = self.conv5_2(x5_d)
+        x5_c = self.relu5_2(x5_c)
         x5_b = x5_2
-        x5_b = self.relu5_6(self.conv5_6(x5_b))
-        x5_b = self.relu5_7(self.conv5_7(x5_b))
-        # initial saliency attention
-        x5_sal = self.conv5_4(self.conv5_3(x5_s_1))
+        x5_b = self.conv5_6(x5_b)
+        x5_b = self.relu5_6(x5_b)
+        x5_b = self.conv5_7(x5_b)
+        x5_b = self.relu5_7(x5_b)
+        x5_sal = self.conv5_3(x5_s_1)
         x5_sal = self.conv5_4(x5_sal)
         x_att5= self.conv5_5(x5_sal)
         x_att5 = self.sigmoid5_1(x_att5)
-        # depth attention
         n_, _, _, _ = x_att5.size()
         res_f = torch.zeros((n_, 1, 64, 64))
         res_dsf = torch.zeros((n_, 1, 64, 64))
@@ -359,21 +351,15 @@ class decoder_s(nn.Module):
             res3 = res3.cuda()
             res2 = res * res1 * res3
             res2[res2 > 0] = 255
-
             res_sim = res2 * (target / 255)
             res_bi = res2
             res_res = res2
-            #res_dsf1 = res2 - res_sim
             total = target.mean(dim=3)
             total = total.mean(dim=2)
             total_d = res_bi.mean(dim=3)
             total_d = total_d.mean(dim=2)
-            #print(target)
-            #print(total)
-            #print(total_d)
             res_sim = res_sim.mean(dim = 3)
             res_sim = res_sim.mean(dim=2 )
-            #print(res_sim)
             weight = torch.div(res_sim,total)
             weight = torch.unsqueeze(weight, -1)
             weight = torch.unsqueeze(weight, -1)
@@ -381,9 +367,6 @@ class decoder_s(nn.Module):
             weight_d = torch.unsqueeze(weight_d1, -1)
             weight_d = torch.unsqueeze(weight_d, -1)
             weight_d = (  weight_d) * (weight_d/(weight_d + 1e-4))
-            #print(weight)
-            #print(weight_d)
-            #print(weight_d1)
             res_f = res_f.cuda()
             res_dsf = res_dsf.cuda()
             res__ = torch.mul(res_res , weight)
@@ -393,207 +376,138 @@ class decoder_s(nn.Module):
         res_f = res_f / 255
         res_dsf = res_dsf / 255
         res_df5 = self.pool5_3(self.pool5_4(res_f))
-
         res_f5 = self.pool5_2(self.pool5_1(res_dsf))
         x5_reatt = self.upsample(self.maxpool5( x_att5))
-        # self modal attention
         x5_res2 = x5_s_1 * x5_reatt
         x5_res2 = self.channel_reatt5(x5_res2)
-        # cross modal attention
         x5_res = x5_s_1 * res_f5
         x5_ratt = self.channel_ratt5(x5_res)
         x5_ratt = self.conv5_res1(x5_ratt)
         x5_ratt = self.conv5_res2(x5_ratt)
         x5_res = x5_ratt
-        # structure enhance
         x5_stru = x5_s_1 * x5_b
         x5_stru = self.conv5_be(x5_stru)
         x5_stru = self.relu(x5_stru + x5_s_1)
-        #fuse feature
         x5_rf = torch.cat((x5_res2 , x5_res),1)
         x5_rf1 = self.convcat5(x5_rf)
         x5_rf = x5_rf1 + x5_stru
         x5_rf = self.convadd5(x5_rf)
-
-        #cross modal attention
         x5_red = x5_c * x_att5
         x5_att = self.channel_att5(x5_red)
         x5_att = self.conv5_red1(x5_att)
         x5_att = self.conv5_red2(x5_att)
-        #self modal attention
         x5_red2 = x5_c * res_df5
         x5_red2 = self.channel_rdatt5(x5_red2)
-        # structure enhance
         x5_strud = x5_c * x5_b
         x5_strud = self.conv5_bd(x5_strud)
         x5_strud = self.relu(x5_strud + x5_c)
-        # fuse feature
         x5_df = torch.cat((x5_att , x5_red2),1)
         x5_df = self.convcat52(x5_df)
         x5_df = x5_df + x5_strud
         x5_df = self.convadd52(x5_df)
-
-        #cross modal feature fuse
         x5_f = torch.cat((x5_rf , x5_df),1)
         x5_f = self.convcat53(x5_f)
         x5_f = self.convcat54(x5_f)
-        #x5_s_a = torch.cat((x5_res, x5_att),1)
-        #x5_s_a = self.conv_concat10(x5_s_a)
-        #x5_s_a = self.conv_concat11(x5_s_a)
         x5_s_r = self.conv5_r(x5_f)
         x5_s_r = self.relu5_r(x5_s_r)
         x5_s = x5_f + x5_s_r
-        #enhance boundary feature
-        #x5_s
-        #x5_sr = x5_s1 * x5_b
-        #x5_s = x5_s1 + x5_sr
-        # x5_s = torch.cat((x5_s1 , x5_b),1)
-        # x5_s = self.conv_concat14(x5_s)
-        # x5_s = self.conv_concat15(x5_s)
-        #
         x4_s_1 = x4
         x4_s_1 = self.conv4_8(x4_s_1)
         x4_s_1 = self.relu4_8(x4_s_1)
         x4_s_1 = self.conv4_9(x4_s_1)
         x4_s_1 = self.relu4_9(x4_s_1)
-        #depth feature extraction
         x4_d = x4_3
         x4_d = self.conv4_1(x4_d)
         x4_d = self.relu4_1(x4_d)
         x4_c = self.conv4_2(x4_d)
         x4_c = self.relu4_2(x4_c)
-        #boundary feature extraction
         x4_b = x4_2
         x4_b = self.conv4_3(x4_b)
         x4_b = self.relu4_3(x4_b)
         x4_b = self.conv4_4(x4_b)
         x4_b = self.relu4_4(x4_b)
-        # self modal attention
         x4_reatt = self.upsample(self.upsample((self.maxpool4( self.upsample(1-x_att5)))))
         x4_res2 = x4_s_1 * x4_reatt
         x4_res2 = self.channel_reatt4(x4_res2)
-        #cross modal attention
         x4_res = x4_s_1 * self.pool4_1(res_dsf)
         x4_res = self.channel_ratt4(x4_res)
         x4_res = self.conv4_res1(x4_res)
         x4_res = self.conv4_res2(x4_res)
-        #structure enhance
         x4_stru = x4_s_1 * x4_b
         x4_stru = self.conv4_be(x4_stru)
         x4_stru = self.relu(x4_stru + x4_s_1)
-        # fuse feature
         x4_rf = torch.cat((x4_res2, x4_res), 1)
         x4_rf = self.convcat4(x4_rf)
         x4_rf = x4_rf + x4_stru
         x4_rf = self.convadd4(x4_rf)
-
-        #cross modal attention
         x4_red = x4_c * self.upsample(x_att5)
         x4_att = self.channel_att4(x4_red)
         x4_att = self.conv4_red1(x4_att)
         x4_att = self.conv4_red2(x4_att)
-        # self modal attention
         x4_red2 = x4_c * self.pool4_2(res_f)
         x4_red2 = self.channel_rdatt4(x4_red2)
-        # structure enhance
         x4_strud = x4_c * x4_b
         x4_strud = self.conv4_bd(x4_strud)
         x4_strud = self.relu(x4_strud + x4_c)
-        # fuse feature
         x4_df = torch.cat((x4_att, x4_red2), 1)
         x4_df = self.convcat42(x4_df)
         x4_df = x4_df + x4_strud
         x4_df = self.convadd42(x4_df)
-
-        # cross modal feature fuse
         x4_f = torch.cat((x4_rf, x4_df), 1)
         x4_f = self.convcat43(x4_f)
         x4_f = self.convcat44(x4_f)
-        #x4_s_a = torch.cat((x4_res , x4_att),1)
-        #x4_s_a = self.conv_concat12(x4_s_a)
-        #x4_s_a = self.conv_concat13(x4_s_a)
         x4_s_r = self.conv4_r(x4_f)
         x4_s_r = self.relu4_r(x4_s_r)
         x4_s = x4_f + x4_s_r
-        #x4_sr = x4_s1 * x4_b
-        #x4_s = x4_sr + x4_s1
-
-        # x4_s = torch.cat((x4_s, x4_b), 1)
-        # x4_s = self.conv_concat16(x4_s)
-        # x4_s = self.conv_concat17(x4_s)
-
-        #saliency feature extraciton
         x3_s_1 = x3
         x3_s_1 = self.conv3_13(x3_s_1)
         x3_s_1 = self.relu3_13(x3_s_1)
         x3_s_1 = self.conv3_14(x3_s_1)
         x3_s_1 = self.relu3_14(x3_s_1)
-        #depth feature extraction
         x3_d = x3_3
         x3_d = self.conv3_9(x3_d)
         x3_d = self.relu3_7(x3_d)
         x3_d = self.conv3_10(x3_d)
         x3_c = self.relu3_8(x3_d)
-        #boundary feature extraction
         x3_b = x3_2
         x3_b = self.conv3_11(x3_b)
         x3_b = self.relu3_9(x3_b)
         x3_b = self.conv3_12(x3_b)
         x3_b = self.relu3_10(x3_b)
-        #cross modal attention
         x3_red = x3_c * self.upsample(self.upsample(x_att5))
         x3_att = self.channel_att3(x3_red)
         x3_att = self.conv3_red1(x3_att)
         x3_att = self.conv3_red2(x3_att)
-        # cross modal attention
         x3_res = x3_s_1 * res_dsf
         x3_res = self.channel_ratt3(x3_res)
         x3_res = self.conv3_res1(x3_res)
         x3_res = self.conv3_res2(x3_res)
-        # self modal attention
         x3_reatt = self.upsample(self.upsample(self.maxpool3((self.upsample(self.upsample(1-x_att5))))))
         x3_res2 = x3_s_1 * x3_reatt
         x3_res2 = self.channel_reatt3(x3_res2)
-        # enhance boundary
         x3_stru = x3_s_1 * x3_b
         x3_stru = self.conv3_be(x3_stru)
         x3_stru = self.relu(x3_stru + x3_s_1)
-        # fuse feature
         x3_rf = torch.cat((x3_res2, x3_res), 1)
-        x3_rf = self.convcat3(x3_rf)
-        x3_rf = x3_rf + x3_stru
+        x3_rf1 = self.convcat3(x3_rf)
+        x3_rf = x3_rf1 + x3_stru
         x3_rf = self.convadd3(x3_rf)
         # self modal attention
         x3_red2 = x3_c * res_f
         x3_red2 = self.channel_rdatt3(x3_red2)
-        #boundary enhance
         x3_strud = x3_c * x3_b
         x3_strud = self.conv3_bd(x3_strud)
         x3_strud = self.relu(x3_strud + x3_c)
-        # fuse feature
         x3_df = torch.cat((x3_att, x3_red2), 1)
-        x3_df = self.convcat32(x3_df)
-        x3_df = x3_df + x3_strud
+        x3_df1 = self.convcat32(x3_df)
+        x3_df = x3_df1 + x3_strud
         x3_df = self.convadd32(x3_df)
-        # cross modal feature fuse
         x3_f = torch.cat((x3_rf, x3_df), 1)
         x3_f = self.convcat33(x3_f)
         x3_f = self.convcat34(x3_f)
-
-        #x3_s_a = torch.cat((x3_res, x3_att),1)
-        #x3_s_a = self.conv_concat18(x3_s_a)
-        #x3_s_a = self.conv_concat19(x3_s_a)
         x3_s_r = self.conv3_r(x3_f)
         x3_s_r = self.relu3_r(x3_s_r)
         x3_s = x3_f + x3_s_r
-
-        #x3_sr = x3_s1 * x3_b
-        #x3_s = x3_sr + x3_s1
-        # x3_s = torch.cat((x3_s,x3_b),1)
-        # x3_s = self.conv_concat20(x3_s)
-        # x3_s = self.conv_concat21(x3_s)
-
-        #multi-level feature fusion
         x3_s = x3_s + self.conv_upsample6(self.upsample(x4_s)) + self.conv_upsample7(self.upsample(self.upsample(x5_s)))
         x4_s = x4_s + self.conv_upsample12(self.upsample(x5_s))
         x4_s_2 = torch.cat((x4_s, self.conv_upsample8(self.upsample(x5_s))), 1)
@@ -603,7 +517,9 @@ class decoder_s(nn.Module):
         x3_s_2 = self.conv3_3(x3_s_2)
         x3_s_2 = self.conv3_4(x3_s_2)
         x_attention = self.conv3_8(x3_s_2)
+
         return x_attention,x_att5
+
 
 class model_VGG(nn.Module):
     def __init__(self, channel=32):
