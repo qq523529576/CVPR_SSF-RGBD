@@ -13,7 +13,7 @@ Requirements
 * Numpy 1.16.4
 
 ## Training and Testing Datasets
-Training dataset:  * [download_link](https://pan.baidu.com/s/1dv6cw3TfW4ZBaUsMC-tN1g) codes：5fms.  ||  Test dataset:  * [download_link](https://pan.baidu.com/s/1maVZMJxlCcaeYCtdv_fIRw) codes：49l7. 
+Training dataset:  * [download_link](https://pan.baidu.com/s/1dv6cw3TfW4ZBaUsMC-tN1g) codes：5fms.  ||  Test dataset:  * [download_link](https://pan.baidu.com/s/13RHAF7VMvMvP5YtSj1ovHA) codes：a934. 
 
 ## Testing
 * Download pretrained model from * [download_link](https://pan.baidu.com/s/1sZH4Wh_-nne-nMvDQvSyZw) codes：8zw8.
