@@ -1,10 +1,10 @@
 import torch
 import torch.nn as nn
-import pdb, os, argparse
+import os, argparse
 from torch.autograd import Variable
 from datetime import datetime
 from model.model import model_VGG
-from data import get_loader
+from data_loader import get_loader
 from utils import clip_gradient, adjust_lr
 
 bce_loss = torch.nn.BCELoss(size_average=True)
@@ -59,7 +59,6 @@ def train(train_loader, model, optimizer, epoch):
         bdrs = bdrs.cuda()
         det_dps, dets,bdr_p,atts5 = model(images,depth1,depth)
         loss_bdr = BCE(bdr_p, bdrs)
-        loss4 = loss_bdr
         max_pool1 = nn.MaxPool2d(4, stride=None)
         max_pool2 = nn.MaxPool2d(4, stride=None)
         max_pool3 = nn.MaxPool2d(2, stride=None)
@@ -76,14 +75,14 @@ def train(train_loader, model, optimizer, epoch):
         result = result_ - result1
         result_p = max_pool3(result)
         resultp = upsample2(result_p)
-        loss1 = BCE(det_dps, gts)
+        loss_sal_depth = BCE(det_dps, gts)
         loss_sal = CE(det_dps, gts)
         loss_sals = CE(dets, gts)
-        loss2 = BCE(dets, gts)
+        loss_sal_RGB = BCE(dets, gts)
         loss3 = torch.mul(loss_sals,resultp).mean()
         n_, _, _, _ = gts.size()
         res_f = torch.zeros((n_,1,256, 256))
-        loss5 = bce_loss(atts5, gts)
+        loss_att = bce_loss(atts5, gts)
         for jj in range(opt.total_depth):
             res = depth * 255
             target = gts
@@ -109,20 +108,20 @@ def train(train_loader, model, optimizer, epoch):
             res_f = res_f + res__
         res_f = res_f / 255
         pre_hard_region = torch.mul(loss_sal, res_f).mean()
-        loss_hard_region = pre_hard_region
-        loss = loss1 + loss2 + loss3*0.3 + loss4  + loss5 + loss_hard_region*0.3
+        loss_hard_region = pre_hard_region + loss3
+        loss = loss_sal_depth + loss_sal_RGB + loss_bdr  + loss_att + loss_hard_region*0.3
         loss.backward()
         clip_gradient(optimizer, opt.clip)
         optimizer.step()
         if i % 5 == 0 or i == total_step:
-            print('{} Epoch [{:03d}/{:03d}], Step [{:04d}/{:04d}], Loss1: {:.4f} Loss2: {:0.4f} Loss3: {:0.4f}  Loss4: {:0.4f} Loss5: {:0.4f} Loss6: {:0.4f}  Loss: {:0.4f}  Step: {:0.4f}'.
-                  format(datetime.now(), epoch, opt.epoch, i, total_step, loss1.data, loss2.data,loss3.data,  loss4.data, loss5.data,loss_hard_region.data,loss.data, i+(epoch-1)*total_step ))
-    save_path = 'H:\kalili\Recoverit 2019-11-11 at 09.10.02\I(NTFS)\PAPER_CVPR\F_CODES_SUM\Final_cheak\\'
+            print('{} Epoch [{:03d}/{:03d}], Step [{:04d}/{:04d}], loss_sal_depth: {:.4f} loss_sal_RGB: {:0.4f} loss_bdr: {:0.4f} loss_att: {:0.4f} Loss6: {:0.4f}  Loss: {:0.4f}  Step: {:0.4f}'.
+                  format(datetime.now(), epoch, opt.epoch, i, total_step, loss_sal_depth.data, loss_sal_RGB.data, loss_bdr.data, loss_att.data,loss_hard_region.data,loss.data, i+(epoch-1)*total_step ))
+    save_path = ''
     if not os.path.exists(save_path):
         os.makedirs(save_path)
     if (epoch+1) % 1 == 0:
         torch.save(model.state_dict(), save_path + '%d' % epoch +  '_w.pth' )
-        
+
 progress = range(opt.start_epoch+1 , opt.epoch)
 for epoch in progress:
     if opt.param == True:
